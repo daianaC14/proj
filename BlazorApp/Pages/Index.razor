@@ -1,0 +1,317 @@
+﻿@page "/"
+
+@using BlazorApp.Models
+
+@inject HttpClient Http
+@inject ILogger<Index> logger
+
+<label class="bold-label">Enter directory path:</label>
+<input @bind="directoryPath" placeholder="Enter directory" />
+<button class="btn btn-primary" @onclick="ChangePath" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Change Path</button>
+@if(stage == 0){<i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
+title="Enter the file path where the firmware is located. The binary file representing the firmware will be automatically selected from the specified directory."></i>}
+<br>
+
+@if(stage >= 1)
+{
+    <label class="bold-label">Search binary image using binwalk:</label>
+    <button class="btn btn-primary" @onclick="(() => BinwalkCommand(selectedFile))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Run Command</button>
+    @if(stage==1){<i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
+    title="The provided binary file is searched for known file signatures, file systems, and other data structures."></i>}
+    <br>
+}
+
+@if(stage >= 2)
+{
+    <label>Enter data:</label><br>
+    <input @bind="skip1" placeholder="Skip to" />
+    <input @bind="bs1" placeholder="Block size" />
+    <input @bind="of1" placeholder="Output file name" /><br>
+    <label class="bold-label">Duplicate data:</label>
+    <button class="btn btn-primary" @onclick="(() => DuplicateData(selectedFile, skip1, bs1, of1))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px; margin-top: 2px;">Run Command</button>
+    @if(stage==2){<i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
+    title="Binwalk identifies lzma-compressed data. Since compression tends to significantly increase the information entropy of a file, it's important to copy this section of the binary file to further analyze it. The command requires the user to specify the start value for the lzma-compressed data, the amount of data read from or written to the input or output files in a single operation, and a name for the file to write to. "></i>}
+    <br>
+}
+
+@if(stage >= 3)
+{
+    <label class="bold-label">Extract lzma-compressed data: </label>
+    <button class="btn btn-primary" @onclick="(() => ExtractFile(duplicatedFile))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Extract</button>
+    @if(stage==3){<i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
+    title="This section is used to decompress files that have been compressed using the LZMA algorithm."></i>}
+    <br>
+}
+
+@if(stage >= 4)
+{
+    <label class="bold-label">Search binary image using binwalk:</label>
+    <button class="btn btn-primary" @onclick="(() => BinwalkCommand(duplicatedFile))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Run Command</button>
+    <br>
+}
+
+@if(stage >= 5)
+{
+    <label>Enter data:</label>
+    <input @bind="skip2" placeholder="skip to" />
+    <input @bind="bs2" placeholder="block size" />
+    <input @bind="of2" placeholder="output file name" /><br>
+    <label class="bold-label">Duplicate data:</label>
+    <button class="btn btn-primary" @onclick="(()=> DuplicateData(duplicatedFile,skip2,bs2,of2))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;  margin-top: 2px;">Run Command</button>
+    <br>
+}
+
+@if(stage >= 6)
+{
+    <label class="bold-label">Extract lzma-compressed data: </label>
+    <button class="btn btn-primary" @onclick="(() => ExtractFile(duplicatedFile))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Extract</button>
+    <br>
+}
+
+@if(stage >= 7)
+{
+    <label class="bold-label">Unpack 'cpio' archive:</label>
+    <button class="btn btn-primary" @onclick="(() => CpioCommand(duplicatedFile))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Extract</button>
+    @if(stage==7){<i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
+    title="To maintain the integrity of the extracted file system from the cpio archive, a dedicated directory is created. Within this directory, the archive is unpacked while avoiding the overwriting of any system files using the '--no-absolute-filenames' option."></i>}
+    <br>
+}
+
+@if(stage >= 8)
+{
+    <label>Enter command:</label>
+    <input @bind="commandLine" placeholder="enter command" />
+    <button class="btn btn-primary" @onclick="Command" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Run</button>
+    <i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
+    title="Type a valid terminal command."></i>
+    <br>
+}
+
+<div class="terminal-container">
+    <div class="terminal-header">Terminal:</div>
+    <div class="terminal-output">@((MarkupString)(output?.Replace("\n", "<br />") ?? ""))</div>
+</div>
+
+@code {
+    string? output;
+    string? directoryPath;
+    string? selectedFile;
+    string? skip1;
+    string? bs1;
+    string? of1;
+    string? duplicatedFile;
+    string? skip2;
+    string? bs2;
+    string? of2;
+    string? commandLine;
+
+    int stage = 0;
+    async Task ChangePath()
+    {
+        if(string.IsNullOrWhiteSpace(directoryPath))
+        {
+            output = "Directory cannot be empty.";
+            return;
+        }
+
+        var command = new TerminalCommand { Cmd = $"cd {directoryPath} && pwd"};
+        var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
+
+        if (response.IsSuccessStatusCode)
+        {
+            output = await response.Content.ReadAsStringAsync();
+            output = output?.Replace(@"\n", "<br>")?.Replace(" ", "&nbsp;");
+
+            logger.LogWarning(output);
+            logger.LogWarning(directoryPath);
+            
+            if(output is not null && output.Contains(directoryPath))
+            {
+                output = $"Successfully changed directory to {directoryPath}.";
+                
+                var fileResponse = await Http.GetAsync($"https://localhost:7249/api/files?directoryPath={directoryPath}");
+                if(fileResponse.IsSuccessStatusCode)
+                {
+                    var files = await fileResponse.Content.ReadFromJsonAsync<string[]>();
+                    
+                    if(files is not null)
+                    {
+                        selectedFile = files.FirstOrDefault();
+                        output += $"{selectedFile} was selected to be further analyzed. ";
+                    }
+                    else 
+                    {
+                        output = "There is no .bin file in the selected directory.";    
+                    }
+                    
+                }
+                else 
+                {
+                    output = $"Failed to get files from directory {directoryPath}.";
+                }
+            }
+            else 
+            {
+                output = "Failed to change directory.";
+            }
+        }
+        else
+        {
+            output = $"Error: {response.StatusCode}";
+        }
+        stage += 1;
+    }
+    
+    async Task BinwalkCommand(string? file)
+    {
+        if (file is null)
+        {
+            output = "No binary file was selected. Check for issues in the previous step. ";
+            return;
+        }
+        try
+        {
+            var command = new TerminalCommand { Cmd = $"binwalk {file}"};
+            var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
+
+            if (response.IsSuccessStatusCode)
+            {
+                output = await response.Content.ReadAsStringAsync();
+                 output = output?.Replace(@"\n", "<br>")?.Replace(" ", "&nbsp;");
+            }
+            else
+            {
+                output = $"Error: {response.StatusCode}";
+            }
+        }
+        catch(Exception ex)
+        {
+            output = $"Exception: {ex.Message}";
+        }
+
+        logger.LogWarning("Binwalk",output);
+        stage += 1;
+    }
+
+    async Task DuplicateData(string? inputFile, string skipTo, string blockSize, string outputFileName)
+    {
+        if (inputFile is null)
+        {
+            output = "No file selected. ";
+            return;
+        }
+        if (skipTo is null)
+        {
+            output = "No 'skip to' value provided. ";
+            if (blockSize is null)
+            {
+                output += "No block size provided. ";
+                if (outputFileName is null)
+                {
+                    output += "No name for the output file was provided.";
+                }
+            }
+            return;
+        }
+        if (blockSize is null)
+        {
+            output = "No block size provided. ";
+            if (outputFileName is null)
+            {
+                output += "No name for the output file was provided.";
+            }
+            return;
+        }
+        if (outputFileName is null)
+        {
+            output = "No name for the output file was provided.";
+            return;
+        }
+
+        duplicatedFile = outputFileName;
+
+        var command = new TerminalCommand { Cmd = $"dd if={inputFile} skip={skipTo} bs={blockSize} of={outputFileName}.lzma && file {duplicatedFile}.lzma"};
+
+        var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
+
+        if (response.IsSuccessStatusCode)
+        {
+            output = await response.Content.ReadAsStringAsync();
+            output = output?.Replace(@"\n", "<br>")?.Replace(" ", "&nbsp;");
+        }
+
+        else
+        {
+            output = $"Error: {response.StatusCode}";
+        }
+        stage += 1;
+    }
+
+    async Task ExtractFile(string? file)
+    {
+        if (file is null)
+        {
+            output = "There is no compressed file to extract. ";
+            return;
+        }
+        var command = new TerminalCommand { Cmd = $"unlzma {file}.lzma && file {file}"};
+
+        var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
+
+        if (response.IsSuccessStatusCode)
+        {
+            output = await response.Content.ReadAsStringAsync();
+            output = output?.Replace(@"\n", "<br>")?.Replace(" ", "&nbsp;");
+        }
+
+        else
+        {
+            output = $"Error: {response.StatusCode}";
+        }
+        stage += 1;
+    }
+
+    async Task CpioCommand(string? file)
+    {
+        if (file is null)
+        {
+            output = "There is no ASCII cpio archive to unpack.";
+            return;
+        }
+        var command = new TerminalCommand { Cmd = $"mkdir fileSystem && cd fileSystem && cpio -idm --no-absolute-filenames < ../{file}"};
+
+        var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
+
+        if (response.IsSuccessStatusCode)
+        {
+            output = "The ASCII cpio archive was unpacked successfully.";
+        }
+
+        else
+        {
+            output = $"Error: {response.StatusCode}";
+        }
+        stage += 1;
+    }
+
+    async Task Command()
+    {
+        if(string.IsNullOrWhiteSpace(commandLine))
+        {
+            output = "This field cannot be empty in order to run a terminal command.";
+            return;
+        }
+
+        var command = new TerminalCommand { Cmd = commandLine};
+        var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
+        if (response.IsSuccessStatusCode)
+        {
+            output = await response.Content.ReadAsStringAsync();
+            output = output?.Replace(@"\n", "<br>")?.Replace(" ", "&nbsp;");
+        }
+        else
+        {
+            output = $"Error: {response.StatusCode}";
+        }
+    }
+}

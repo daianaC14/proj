@@ -1,0 +1,42 @@
+﻿@page "/counter"
+
+@using BlazorApp.Models
+
+@inject HttpClient Http
+@inject ILogger<Index> logger
+
+    <label>Enter command:</label>
+    <button class="btn btn-primary" @onclick="Command" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Run</button>
+    <i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
+    title="Type a valid terminal command."></i>
+    <br>
+
+<div class="terminal-container">
+    <div class="terminal-header">Terminal:</div>
+    <div class="terminal-output">@((MarkupString)(output?.Replace("\n", "<br />") ?? ""))</div>
+</div>
+
+@code {
+    string? output;
+    string? commandLine;
+
+    async Task Command()
+    {
+        if (commandLine is null)
+        {
+            output = "can not be null";
+            return;
+        }
+        var command = new TerminalCommand { Cmd = commandLine};
+        var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
+        if (response.IsSuccessStatusCode)
+        {
+            output = await response.Content.ReadAsStringAsync();
+            output = output?.Replace(@"\n", "<br>")?.Replace(" ", "&nbsp;");
+        }
+        else
+        {
+            output = $"Error: {response.StatusCode}";
+        }
+    }
+}

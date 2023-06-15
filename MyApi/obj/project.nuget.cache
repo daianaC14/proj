@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "BtD/5CZgDk5RPYcTpFGXIqy34G70OQ9jVVLLCy55ZjhrHDRbw5nXT9jKYsaJbZC6rVW1UM0djIM+zKSrwu4yZw==",
+  "success": true,
+  "projectFilePath": "/home/kali/Project/MyApi/MyApi.csproj",
+  "expectedPackageFiles": [
+    "/home/kali/.nuget/packages/microsoft.extensions.apidescription.server/3.0.0/microsoft.extensions.apidescription.server.3.0.0.nupkg.sha512",
+    "/home/kali/.nuget/packages/microsoft.openapi/1.2.3/microsoft.openapi.1.2.3.nupkg.sha512",
+    "/home/kali/.nuget/packages/swashbuckle.aspnetcore/6.2.3/swashbuckle.aspnetcore.6.2.3.nupkg.sha512",
+    "/home/kali/.nuget/packages/swashbuckle.aspnetcore.swagger/6.2.3/swashbuckle.aspnetcore.swagger.6.2.3.nupkg.sha512",
+    "/home/kali/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.2.3/swashbuckle.aspnetcore.swaggergen.6.2.3.nupkg.sha512",
+    "/home/kali/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.2.3/swashbuckle.aspnetcore.swaggerui.6.2.3.nupkg.sha512"
+  ],
+  "logs": []
+}
