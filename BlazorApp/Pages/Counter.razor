@@ -5,29 +5,77 @@
 @inject HttpClient Http
 @inject ILogger<Index> logger
 
-    <label>Enter command:</label>
-    <button class="btn btn-primary" @onclick="Command" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;">Run</button>
-    <i class="fas fa-question fa-beat" style="color: #7b2cbf;" 
-    title="Type a valid terminal command."></i>
-    <br>
+<h1>D-Link Exploit</h1>
 
-<div class="terminal-container">
+<p>The exploit exists in the devices server, alphapd, when processing wireless.htm prior to displaying it to the user. If WEPEncryption is provided in the URL this leads to a buffer overflow if the value is longer than 0x28 bytes.</p>
+<h3>Vulnerable devices</h3>
+<hr/>
+<p></p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Camera model</th>
+            <th>Affected Firmware</th>
+            <th>Fixed Firmware</th>
+        </tr>
+    </thead>
+    <tbody>
+         @foreach (var device in vulnerableDevices)
+        {
+            <tr>
+                <td>@device.Model</td>
+                <td>@device.AffectedFirmware</td>
+                <td>@device.FixedFirmware</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<h3>DCS-5009L Management Interface</h3>
+<hr/>
+<a href="http://192.168.1.7">D-Link DCS-5009L</a>
+
+<h3>exploit.py</h3>
+<hr/>
+<p>The exploit takes advantage of a buffer overflow in the alphapd server. The button below runs a python script containing the exploit. The exploit requires credentials to be successful.</p>
+<label>Username: </label> <input @bind="username" placeholder="Enter username" /><br>
+<label>Password: </label> <input @bind="password" type="password" placeholder="Enter password"/>
+<button class="btn btn-primary" 
+@onclick="(()=>Command(username,password))" style="margin-right: 10px;margin-left: 5px; margin-bottom: 5px;  margin-top: 2px;">Run Exploit</button>
+<br>
+<hr>
+
+
+
+
     <div class="terminal-header">Terminal:</div>
     <div class="terminal-output">@((MarkupString)(output?.Replace("\n", "<br />") ?? ""))</div>
-</div>
 
 @code {
     string? output;
-    string? commandLine;
-
-    async Task Command()
-    {
-        if (commandLine is null)
+    string? username;
+    string? password;
+    List<VulnerableDevices> vulnerableDevices = new List<VulnerableDevices>
         {
-            output = "can not be null";
+            new VulnerableDevices{Model="DCS-5009L", AffectedFirmware="v1.08.11 and below", FixedFirmware="v1.10.01"},
+            new VulnerableDevices{Model="DCS-5010L", AffectedFirmware="v1.14.09 and below", FixedFirmware="v1.16.01"},
+            new VulnerableDevices{Model="DCS-5020L", AffectedFirmware="v1.15.12 and below", FixedFirmware="v1.16.01"},
+            new VulnerableDevices{Model="DCS-5025L", AffectedFirmware="v1.03.07 and below", FixedFirmware="v1.04.02"},
+            new VulnerableDevices{Model="DCS-5030L", AffectedFirmware="v1.04.10 and below", FixedFirmware="v1.05.01"},
+            new VulnerableDevices{Model="DCS-931L", AffectedFirmware="v1.14.11 and below", FixedFirmware="v1.15.01"},
+            new VulnerableDevices{Model="DCS-932L", AffectedFirmware="v2.17.01 and below", FixedFirmware="v2.18.01"},
+            new VulnerableDevices{Model="DCS-933L", AffectedFirmware="v1.14.11 and below", FixedFirmware="v1.15.01"},
+            new VulnerableDevices{Model="DCS-934L", AffectedFirmware="v1.06.02 and below", FixedFirmware="v1.07.01"}
+        };
+
+
+    async Task Command(string? username, string? password)
+    {
+        if (username is null || password is null)
+        {
+            output = "Credentials cannot be null.";
             return;
         }
-        var command = new TerminalCommand { Cmd = commandLine};
+        var command = new TerminalCommand { Cmd ="python3 /home/kali/gitproj/CVE-2019-10999/exploit.py -i 192.168.1.7 -P 80 -u admin -p \"iloveupb\""};
         var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
         if (response.IsSuccessStatusCode)
         {
@@ -38,5 +86,6 @@
         {
             output = $"Error: {response.StatusCode}";
         }
+
     }
 }
