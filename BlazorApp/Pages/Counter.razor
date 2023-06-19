@@ -75,7 +75,7 @@
             output = "Credentials cannot be null.";
             return;
         }
-        var command = new TerminalCommand { Cmd ="python3 /home/kali/gitproj/CVE-2019-10999/exploit.py -i 192.168.1.7 -P 80 -u admin -p \"iloveupb\""};
+        var command = new TerminalCommand { Cmd =$"python3 /home/kali/gitproj/CVE-2019-10999/exploit.py -i 192.168.1.7 -P 80 -u {username} -p {password}"};
         var response = await Http.PostAsJsonAsync("https://localhost:7249/api/terminal", command);
         if (response.IsSuccessStatusCode)
         {
