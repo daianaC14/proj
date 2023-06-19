@@ -1,0 +1,102 @@
+\hypertarget{Program_8cs}{}\doxysection{Program.\+cs File Reference}
+\label{Program_8cs}\index{Program.cs@{Program.cs}}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+builder.\+Services. \mbox{\hyperlink{Program_8cs_a32513b155f6d1263638acf5e74c306ea}{Add\+Cors}} (options=$>$ \{ options.\+Add\+Default\+Policy(\mbox{\hyperlink{Program_8cs_a2f78352277081c620fd4cf92a5ce15e5}{builder}}=$>$ \{ builder.\+With\+Origins(\char`\"{}http\+://localhost\+:5137\char`\"{}) .Allow\+Any\+Header() .Allow\+Any\+Method();\});\})
+\item 
+builder.\+Services. \mbox{\hyperlink{Program_8cs_a2f5c226349fdd16113cfb89b4da9aeea}{Add\+Singleton$<$ Bash\+Service $>$}} ()
+\item 
+\mbox{\hyperlink{Program_8cs_a79a944c7f0e25196ca3c5a8638b919b9}{if}} (app.\+Environment.\+Is\+Development())
+\item 
+app. \mbox{\hyperlink{Program_8cs_aa4d447fc3129a3aa301d736b8bd04ae9}{Use\+Https\+Redirection}} ()
+\item 
+app. \mbox{\hyperlink{Program_8cs_a94c810d266751293a2d511a720a5625f}{Use\+Routing}} ()
+\item 
+app. \mbox{\hyperlink{Program_8cs_a0a7b080f8fbf578227b41f824d2bcec5}{Use\+Cors}} ()
+\item 
+app. \mbox{\hyperlink{Program_8cs_a5fa8737dddade7ab7664fde63bc102c8}{Map\+Post}} (\char`\"{}/api/terminal\char`\"{}, async(\mbox{[}From\+Services\mbox{]}\mbox{\hyperlink{classMyApi_1_1BashService}{Bash\+Service}} bash, \mbox{\hyperlink{classTerminalCommand}{Terminal\+Command}} command)=$>$ \{ \mbox{\hyperlink{Program_8cs_a79a944c7f0e25196ca3c5a8638b919b9}{if}}(command?.Cmd==null) return Results.\+Bad\+Request(\char`\"{}No command provided\char`\"{});var escaped\+Args=command.\+Cmd.\+Replace(\char`\"{}\textbackslash{}\char`\"{}\char`\"{}, \char`\"{}\textbackslash{}\textbackslash{}\textbackslash{}\char`\"{}\char`\"{});var result=await bash.\+Run\+Command(escaped\+Args);Console.\+Write\+Line(result);return Results.\+Ok(result);\})
+\item 
+app. \mbox{\hyperlink{Program_8cs_a268cbb45a4e4c44b9481823abcc02ec3}{Map\+Get}} (\char`\"{}/api/files\char`\"{},(\mbox{[}From\+Query\mbox{]}string directory\+Path)=$>$ \{ \mbox{\hyperlink{Program_8cs_a79a944c7f0e25196ca3c5a8638b919b9}{if}}(Directory.\+Exists(directory\+Path)) \{ try \{ var files=Directory.\+Get\+Files(directory\+Path, \char`\"{}$\ast$.bin\char`\"{});return Results.\+Ok(files);\} catch(Exception ex) \{ return Results.\+Problem(ex.\+Message);\} \} else \{ return Results.\+Not\+Found(\$\char`\"{}Directory \{directory\+Path\} not found.\char`\"{});\} \})
+\item 
+app. \mbox{\hyperlink{Program_8cs_aaa3dbf02e269c3ef7e8546d290c6b3dd}{Run}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+var \mbox{\hyperlink{Program_8cs_a2f78352277081c620fd4cf92a5ce15e5}{builder}} = Web\+Application.\+Create\+Builder(args)
+\item 
+var \mbox{\hyperlink{Program_8cs_a7b225fcb720e4d5ed2bbf60e28a25e6d}{app}} = builder.\+Build()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{Program_8cs_a32513b155f6d1263638acf5e74c306ea}\label{Program_8cs_a32513b155f6d1263638acf5e74c306ea}} 
+\index{Program.cs@{Program.cs}!AddCors@{AddCors}}
+\index{AddCors@{AddCors}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{AddCors()}{AddCors()}}
+{\footnotesize\ttfamily builder.\+Services. Add\+Cors (\begin{DoxyParamCaption}\item[{options}]{,  }\item[{\{ options.\+Add\+Default\+Policy(\mbox{\hyperlink{Program_8cs_a2f78352277081c620fd4cf92a5ce15e5}{builder}}=$>$ \{ builder.\+With\+Origins(\char`\"{}http\+://localhost\+:5137\char`\"{}) .Allow\+Any\+Header() .Allow\+Any\+Method();\});\}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_a2f5c226349fdd16113cfb89b4da9aeea}\label{Program_8cs_a2f5c226349fdd16113cfb89b4da9aeea}} 
+\index{Program.cs@{Program.cs}!AddSingleton$<$ BashService $>$@{AddSingleton$<$ BashService $>$}}
+\index{AddSingleton$<$ BashService $>$@{AddSingleton$<$ BashService $>$}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{AddSingleton$<$ BashService $>$()}{AddSingleton< BashService >()}}
+{\footnotesize\ttfamily builder.\+Services. Add\+Singleton$<$ \mbox{\hyperlink{classMyApi_1_1BashService}{Bash\+Service}} $>$ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_a79a944c7f0e25196ca3c5a8638b919b9}\label{Program_8cs_a79a944c7f0e25196ca3c5a8638b919b9}} 
+\index{Program.cs@{Program.cs}!if@{if}}
+\index{if@{if}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{if()}{if()}}
+{\footnotesize\ttfamily if (\begin{DoxyParamCaption}\item[{app.\+Environment.}]{Is\+Development() }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_a268cbb45a4e4c44b9481823abcc02ec3}\label{Program_8cs_a268cbb45a4e4c44b9481823abcc02ec3}} 
+\index{Program.cs@{Program.cs}!MapGet@{MapGet}}
+\index{MapGet@{MapGet}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{MapGet()}{MapGet()}}
+{\footnotesize\ttfamily app. Map\+Get (\begin{DoxyParamCaption}\item[{\char`\"{}/api/files\char`\"{}}]{,  }\item[{(\mbox{[}From\+Query\mbox{]}string directory\+Path)}]{,  }\item[{\{ \mbox{\hyperlink{Program_8cs_a79a944c7f0e25196ca3c5a8638b919b9}{if}}(Directory.\+Exists(directory\+Path)) \{ try \{ var files=Directory.\+Get\+Files(directory\+Path, \char`\"{}$\ast$.bin\char`\"{});return Results.\+Ok(files);\} catch(Exception ex) \{ return Results.\+Problem(ex.\+Message);\} \} else \{ return Results.\+Not\+Found(\$\char`\"{}Directory \{directory\+Path\} not found.\char`\"{});\} \}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_a5fa8737dddade7ab7664fde63bc102c8}\label{Program_8cs_a5fa8737dddade7ab7664fde63bc102c8}} 
+\index{Program.cs@{Program.cs}!MapPost@{MapPost}}
+\index{MapPost@{MapPost}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{MapPost()}{MapPost()}}
+{\footnotesize\ttfamily app. Map\+Post (\begin{DoxyParamCaption}\item[{\char`\"{}/api/terminal\char`\"{}}]{,  }\item[{async(\mbox{[}From\+Services\mbox{]}\mbox{\hyperlink{classMyApi_1_1BashService}{Bash\+Service}} bash, \mbox{\hyperlink{classTerminalCommand}{Terminal\+Command}} command)}]{,  }\item[{\{ \mbox{\hyperlink{Program_8cs_a79a944c7f0e25196ca3c5a8638b919b9}{if}}(command?.Cmd==null) return Results.\+Bad\+Request(\char`\"{}No command provided\char`\"{});var escaped\+Args=command.\+Cmd.\+Replace(\char`\"{}\textbackslash{}\char`\"{}\char`\"{}, \char`\"{}\textbackslash{}\textbackslash{}\textbackslash{}\char`\"{}\char`\"{});var result=await bash.\+Run\+Command(escaped\+Args);Console.\+Write\+Line(result);return Results.\+Ok(result);\}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_aaa3dbf02e269c3ef7e8546d290c6b3dd}\label{Program_8cs_aaa3dbf02e269c3ef7e8546d290c6b3dd}} 
+\index{Program.cs@{Program.cs}!Run@{Run}}
+\index{Run@{Run}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{Run()}{Run()}}
+{\footnotesize\ttfamily app. Run (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_a0a7b080f8fbf578227b41f824d2bcec5}\label{Program_8cs_a0a7b080f8fbf578227b41f824d2bcec5}} 
+\index{Program.cs@{Program.cs}!UseCors@{UseCors}}
+\index{UseCors@{UseCors}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{UseCors()}{UseCors()}}
+{\footnotesize\ttfamily app. Use\+Cors (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_aa4d447fc3129a3aa301d736b8bd04ae9}\label{Program_8cs_aa4d447fc3129a3aa301d736b8bd04ae9}} 
+\index{Program.cs@{Program.cs}!UseHttpsRedirection@{UseHttpsRedirection}}
+\index{UseHttpsRedirection@{UseHttpsRedirection}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{UseHttpsRedirection()}{UseHttpsRedirection()}}
+{\footnotesize\ttfamily app. Use\+Https\+Redirection (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{Program_8cs_a94c810d266751293a2d511a720a5625f}\label{Program_8cs_a94c810d266751293a2d511a720a5625f}} 
+\index{Program.cs@{Program.cs}!UseRouting@{UseRouting}}
+\index{UseRouting@{UseRouting}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{UseRouting()}{UseRouting()}}
+{\footnotesize\ttfamily app. Use\+Routing (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{Program_8cs_a7b225fcb720e4d5ed2bbf60e28a25e6d}\label{Program_8cs_a7b225fcb720e4d5ed2bbf60e28a25e6d}} 
+\index{Program.cs@{Program.cs}!app@{app}}
+\index{app@{app}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{app}{app}}
+{\footnotesize\ttfamily var app = builder.\+Build()}
+
+\mbox{\Hypertarget{Program_8cs_a2f78352277081c620fd4cf92a5ce15e5}\label{Program_8cs_a2f78352277081c620fd4cf92a5ce15e5}} 
+\index{Program.cs@{Program.cs}!builder@{builder}}
+\index{builder@{builder}!Program.cs@{Program.cs}}
+\doxysubsubsection{\texorpdfstring{builder}{builder}}
+{\footnotesize\ttfamily var builder = Web\+Application.\+Create\+Builder(args)}
+
